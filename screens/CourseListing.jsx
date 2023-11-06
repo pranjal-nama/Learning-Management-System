@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { View, Text, ScrollView, TouchableOpacity, Image, StyleSheet } from 'react-native';
 import StudentDashboard from './StudentDashboard';
 import { SafeAreaView } from 'react-native';
@@ -9,6 +9,8 @@ const CourseListing = ({courses}) => {
     const [isUserProfileModalVisible, setUserProfileModalVisible] = useState(false);
     const [selectedCourse, setSelectedCourse] = useState(null);
     const [isCourseDetailModalVisible, setCourseDetailModalVisible] = useState(false);
+    const [coursesData, setCoursesData] = useState(null);
+    const [enrolled, setEnrolled] = useState(false);
 
     const navigateToCourseDetails = (course) => {
       setSelectedCourse(course);
@@ -16,107 +18,48 @@ const CourseListing = ({courses}) => {
     };
 
     const userData = {
-        name: 'John Doe',
+        id: '101',
+        name: 'Alice',
+        email: "alice@example.com",
     };
-    const fakeCourses = [
-      {
-        id: 1,
-        name: 'Course 1',
-        instructor: 'Instructor 1',
-        description: 'This is the description for Course 1.',
-        status: 'Open'
-      },
-      {
-        id: 2,
-        name: 'Course 2',
-        instructor: 'Instructor 2',
-        description: 'This is the description for Course 2.',
-      },
-      {
-        id: 3,
-        name: 'Course 2',
-        instructor: 'Instructor 2',
-        description: 'This is the description for Course 2.',
-      },
-      {
-        id: 4,
-        name: 'Course 2',
-        instructor: 'Instructor 2',
-        description: 'This is the description for Course 2.',
-      },
-      {
-        id: 5,
-        name: 'Course 2',
-        instructor: 'Instructor 2',
-        description: 'This is the description for Course 2.',
-      },
-      {
-        id: 6,
-        name: 'Course 2',
-        instructor: 'Instructor 2',
-        description: 'This is the description for Course 2.',
-      },
-      {
-        id: 7,
-        name: 'Course 2',
-        instructor: 'Instructor 2',
-        description: 'This is the description for Course 2.',
-      },
-      {
-        id: 8,
-        name: 'Course 2',
-        instructor: 'Instructor 2',
-        description: 'This is the description for Course 2.',
-      },
-      {
-        id: 9,
-        name : 'Course 2',
-        instructor: 'Instructor 2',
-        description: 'This is the description for Course 2.',
-      },
-      {
-        id: 10,
-        name: 'Course 2',
-        instructor: 'Instructor 2',
-        description: 'This is the description for Course 2.',
-      },
-      {
-        id: 11,
-        name: 'Course 2',
-        instructor: 'Instructor 2',
-        description: 'This is the description for Course 2.',
-      },
-      {
-        id: 12,
-        name: 'Course 2',
-        instructor: 'Instructor 2',
-        description: 'This is the description for Course 2.',
-      },
-      {
-        id: 13,
-        name: 'Course 2',
-        instructor: 'Instructor 2',
-        description: 'This is the description for Course 2.',
-      },
-      {
-        id: 14,
-        name: 'Course 2',
-        instructor: 'Instructor 2',
-        description: 'This is the description for Course 2.',
-      },
-      {
-        id: 15,
-        name: 'Course 2',
-        instructor: 'Instructor 2',
-        description: 'This is the description for Course 2.',
-      },
-      {
-        id: 16,
-        name: 'Course 2',
-        instructor: 'Instructor 2',
-        description: 'This is the description for Course 2.',
-      },
-    ];
+
+    useEffect(() => {
+      fetch('https://mock.mengxuegu.com/mock/65488797a6dde808a695ee60/example/courses')
+        .then((response) => {
+          if (response.ok) {
+            return response.json(); 
+          } else {
+            throw new Error('Failed to fetch data from the API');
+          }
+        })
+        .then((apiData) => {
+          setCoursesData(apiData);
+        })
+        .catch((error) => {
+          console.error(error);
+        });
+    }, []);
+
+    const onEnroll = () => {
+      const isEnrolled = selectedCourse.students.some(student => student.id === 101);
+  
+      if (!isEnrolled) {
+        const newUser = {
+          id: userData.id,
+          name: userData.name,
+          email: userData.email,
+        };
+  
+        selectedCourse.students.push(newUser);
+  
+        setEnrolled(true);
+      }
+    };
+
+    useEffect(()=>{
+      setEnrolled(false)
+    },[selectedCourse])
+  
     
   return (
     <SafeAreaView style={styles.container}>
@@ -129,27 +72,33 @@ const CourseListing = ({courses}) => {
           />
         </TouchableOpacity>
       </View>
-       <ScrollView style={styles.courseList}>
-        {fakeCourses.map((course) => (
-          <CourseCard
-            key={course.id}
-            course={course}
-            onPress={() => navigateToCourseDetails(course)}
-          />
-        ))}
-      </ScrollView>
+      {coursesData ? (
+        <ScrollView style={styles.courseList}>
+          {coursesData.map((course) => (
+            <CourseCard
+              key={course.id}
+              course={course}
+              onPress={() => navigateToCourseDetails(course)}
+            />
+          ))}
+        </ScrollView>
+      ) : (
+        <Text>Loading courses...</Text>
+      )}
 
       <StudentDashboard
         visible={isUserProfileModalVisible}
         onClose={() => setUserProfileModalVisible(false)}
         userData={userData}
-        enrolledCourses={fakeCourses}
+        courses={coursesData}
       />
 
       <CourseDetails
         visible={isCourseDetailModalVisible}
         onClose={() => setCourseDetailModalVisible(false)}
         courseData={selectedCourse}
+        onEnroll={onEnroll}
+        enrolled={enrolled}
       />
     </SafeAreaView>
   );

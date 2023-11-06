@@ -1,13 +1,17 @@
 import React from 'react';
-import { View, Text, Modal, TouchableOpacity, Image, StyleSheet, ProgressBarAndroid } from 'react-native';
+import { View, Text, Modal, TouchableOpacity, Image, StyleSheet} from 'react-native';
 import { ScrollView } from 'react-native-gesture-handler';
 import ProgressBar from 'react-native-progress/Bar';
 import { Ionicons } from '@expo/vector-icons';
 
-const StudentDashboard = ({ visible, onClose, userData, enrolledCourses }) => {
-  if (!enrolledCourses) {
+const StudentDashboard = ({ visible, onClose, userData, courses }) => {
+  if (!courses) {
     return null;
   }
+  const studentId = 101; 
+  const enrolledCourses = courses.filter(course => {
+    return course.students.some(student => student.id === studentId);
+  });
 
   return (
     <Modal visible={visible} animationType="slide">
@@ -22,17 +26,11 @@ const StudentDashboard = ({ visible, onClose, userData, enrolledCourses }) => {
 
         {enrolledCourses.map((course, index) => (
           <View key={index} style={styles.courseCard}>
-            <Image source={{ uri: course.image }} style={styles.courseImage} />
+            <Image source={require('../assets/webDev.jpg')} style={styles.courseImage} />
             <View style={styles.courseInfo}>
-              <Text style={styles.courseName}>{course.name}</Text>
-              <Text style={styles.instructor}>Instructor: {course.instructor}</Text>
-              <Text style={styles.dueDate}>Due Date: {course.dueDate}</Text>
-              {/* <ProgressBarAndroid
-                styleAttr="Horizontal"
-                indeterminate={false}
-                progress={course.progress}
-                style={styles.progressBar}
-              /> */}
+              <Text style={styles.courseName}>{course?.name}</Text>
+              <Text style={styles.instructor}>Instructor: {course?.instructor}</Text>
+              {/* <Text style={styles.dueDate}>Due Date: {course?.dueDate}</Text> */}
               <ProgressBar progress={0.5} width={200} color="#555" height={7} />
             </View>
           </View>
@@ -94,7 +92,7 @@ const styles = StyleSheet.create({
     borderRadius: 5,
   },
   backButton: {
-    right: 33,
+    right: 54,
     top: -6,
   },
 });
